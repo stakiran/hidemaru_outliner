@@ -1,0 +1,2 @@
+# hidemaru_outliner
+秀丸エディタでアウトライナーを実現する
