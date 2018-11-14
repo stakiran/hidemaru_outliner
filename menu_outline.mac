@@ -1,0 +1,176 @@
+LabelTop:
+
+#use_mouse_pos = true;
+if(iskeydown(0x10)){
+	#use_mouse_pos = false;
+}
+if(iskeydown(0x11)){
+	#use_mouse_pos = false;
+}
+if(iskeydown(0x12)){
+	#use_mouse_pos = false;
+}
+
+/*
+  見出しバーon/off
+
+  折りたたむ（トグル）
+  全部折りたたむ
+  全部折りたたみ解除する
+
+  レベル1
+  レベル2
+  レベル全部
+
+  表示消す
+  表示↑
+  表示↓
+  表示→
+  表示←
+*/
+
+MenuDefinition:
+
+#cnt=0;
+
+#I_TOGGLE_SECTIONBAR = #cnt; #cnt=#cnt+1;
+#I____SEP1           = #cnt; #cnt=#cnt+1;
+#I_TOGGLE_FOLD       = #cnt; #cnt=#cnt+1;
+#I_FOLD_ALL          = #cnt; #cnt=#cnt+1;
+#I_UNFOLD_ALL        = #cnt; #cnt=#cnt+1;
+#I____SEP2           = #cnt; #cnt=#cnt+1;
+#I_LV1               = #cnt; #cnt=#cnt+1;
+#I_LV2               = #cnt; #cnt=#cnt+1;
+#I_LV_ALL            = #cnt; #cnt=#cnt+1;
+#I____SEP3           = #cnt; #cnt=#cnt+1;
+#I_TOGGLE_OUTLINEWND = #cnt; #cnt=#cnt+1;
+#I_LEFT_OUTLINEWND   = #cnt; #cnt=#cnt+1;
+#I_RIGHT_OUTLINEWND  = #cnt; #cnt=#cnt+1;
+#I_UP_OUTLINEWND     = #cnt; #cnt=#cnt+1;
+#I_DOWN_OUTLINEWND   = #cnt; #cnt=#cnt+1;
+#I____SEP4          = #cnt; #cnt=#cnt+1;
+#I_EDIT_ME           = #cnt;
+
+#idx=#I_TOGGLE_SECTIONBAR; $items[#idx] = "(&E)見出しバー ON/OFF";
+#idx=#I____SEP1; $items[#idx]           = "\x01";
+#idx=#I_TOGGLE_FOLD; $items[#idx]       = "(&X)折りたたむ";
+#idx=#I_FOLD_ALL; $items[#idx]          = "(&D)全部折りたたむ";
+#idx=#I_UNFOLD_ALL; $items[#idx]        = "(&C)全部折りたたみを解除する";
+#idx=#I____SEP2; $items[#idx]           = "\x01";
+#idx=#I_LV1; $items[#idx]               = "(&1)レベル1まで展開";
+#idx=#I_LV2; $items[#idx]               = "(&2)レベル2まで展開";
+#idx=#I_LV_ALL; $items[#idx]            = "(&3)レベル全部展開";
+#idx=#I____SEP3; $items[#idx]           = "\x01";
+#idx=#I_TOGGLE_OUTLINEWND; $items[#idx] = "(&O)アウトライン枠 ON/OFF";
+#idx=#I_LEFT_OUTLINEWND; $items[#idx]   = "(&H)アウトライン枠 ←";
+#idx=#I_RIGHT_OUTLINEWND; $items[#idx]  = "(&L)アウトライン枠 →";
+#idx=#I_UP_OUTLINEWND; $items[#idx]     = "(&K)アウトライン枠 ↑";
+#idx=#I_DOWN_OUTLINEWND; $items[#idx]   = "(&J)アウトライン枠 ↓";
+#idx=#I____SEP4; $items[#idx]           = "\x01";
+#idx=#I_EDIT_ME; $items[#idx]           = "(&P)Programming this macro";
+#idx=#idx+1; #maxidx = #idx;
+
+if(#use_mouse_pos==true){
+	mousemenuarray $items, #maxidx;
+}else{
+	menuarray $items, #maxidx;
+}
+
+if(result==0){
+	// Cancel
+	endmacro;
+}
+#si = result-1;
+$sn = $items[#si];
+
+Actions:
+
+if(#si==#I_EDIT_ME){
+	$path = hidemarudir+"\\hidemaru.exe " + currentmacrofilename;
+	run $path;
+	endmacro;
+}
+
+if(#si==#I_TOGGLE_SECTIONBAR){
+	showoutlinebar;
+	endmacro;
+}
+
+if(#si==#I_TOGGLE_FOLD){
+	if(folded==1){
+		unfold;
+	}else{
+		// fold の挙動:
+		//   if カーソル行が折りたたみ可能 → 折りたたむ
+		//   if カーソル行が折りたたみ不可 → 折りたたみ可能行にジャンプ
+		// なので, fold を二回連続で実行すれば必ず折り畳める.
+		// 
+		// また常にアウトライン解析に従って折りたたみたいので
+		//   0x0020 アウトライン解析との対応
+		// を使用.
+		fold 0x0020;
+		fold 0x0020;
+	}
+	endmacro;
+}
+
+if(#si==#I_FOLD_ALL){
+	// 0 ダイアログを出さない
+	foldall 0x0020, 0;
+	endmacro;
+}
+
+if(#si==#I_UNFOLD_ALL){
+	unfoldall;
+	endmacro;
+}
+
+if(#si==#I_LV_ALL){
+	#ret = sendmessage(outlinehandle, 0x111, 7180, 0);
+	endmacro;
+}
+
+if(#si==#I_LV1){
+	#ret = sendmessage(outlinehandle, 0x111, 7181, 0);
+	endmacro;
+}
+
+if(#si==#I_LV2){
+	#ret = sendmessage(outlinehandle, 0x111, 7182, 0);
+	endmacro;
+}
+
+if(#si==#I_TOGGLE_OUTLINEWND){
+	showoutline;
+	endmacro;
+}
+
+if(#si==#I_LEFT_OUTLINEWND){
+	#ret = sendmessage(outlinehandle, 0x111, 7131, 0);
+	// 表示変更後はアウトライン枠にフォーカスが当たってしまうので
+	// テキストエリアに戻す.
+	//
+	// [setfocus]
+	// 1 　 編集エリア
+	// 2 　 アウトライン解析の枠
+	setfocus 1;
+	endmacro;
+}
+
+if(#si==#I_RIGHT_OUTLINEWND){
+	#ret = sendmessage(outlinehandle, 0x111, 7132, 0);
+	setfocus 1;
+	endmacro;
+}
+
+if(#si==#I_UP_OUTLINEWND){
+	#ret = sendmessage(outlinehandle, 0x111, 7133, 0);
+	setfocus 1;
+	endmacro;
+}
+
+if(#si==#I_DOWN_OUTLINEWND){
+	#ret = sendmessage(outlinehandle, 0x111, 7134, 0);
+	setfocus 1;
+	endmacro;
+}
