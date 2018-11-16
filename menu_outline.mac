@@ -11,9 +11,12 @@ if(iskeydown(0x12)){
 	#use_mouse_pos = false;
 }
 
-// v0.2.0
+// v0.3.0
 
 /*
+2018/11/16 v0.3.0
+- Add アウトライン解析（別ウィンドウ）を開く項目を追加
+
 2018/11/16 v0.2.0
 - Modify 折りたたみ可能行を折りたたんだ時に、一つ前の折りたたみ可能エリアにジャンプしてしまう不具合を修正
 
@@ -26,6 +29,7 @@ MenuDefinition:
 #cnt=0;
 
 #I_TOGGLE_SECTIONBAR = #cnt; #cnt=#cnt+1;
+#I_CLISTWND          = #cnt; #cnt=#cnt+1;
 #I____SEP1           = #cnt; #cnt=#cnt+1;
 #I_TOGGLE_FOLD       = #cnt; #cnt=#cnt+1;
 #I_FOLD_ALL          = #cnt; #cnt=#cnt+1;
@@ -44,6 +48,7 @@ MenuDefinition:
 #I_EDIT_ME           = #cnt;
 
 #idx=#I_TOGGLE_SECTIONBAR; $items[#idx] = "(&E)見出しバー ON/OFF";
+#idx=#I_CLISTWND; $items[#idx]          = "(&W)アウトライン解析 別窓";
 #idx=#I____SEP1; $items[#idx]           = "\x01";
 #idx=#I_TOGGLE_FOLD; $items[#idx]       = "(&X)折りたたむ";
 #idx=#I_FOLD_ALL; $items[#idx]          = "(&D)全部折りたたむ";
@@ -85,6 +90,11 @@ if(#si==#I_EDIT_ME){
 
 if(#si==#I_TOGGLE_SECTIONBAR){
 	showoutlinebar;
+	endmacro;
+}
+
+if(#si==#I_CLISTWND){
+	clist;
 	endmacro;
 }
 
@@ -172,3 +182,5 @@ if(#si==#I_DOWN_OUTLINEWND){
 	setfocus 1;
 	endmacro;
 }
+
+endmacro;
